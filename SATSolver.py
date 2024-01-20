@@ -1,5 +1,6 @@
 import sys
 from copy import deepcopy
+import re
 
 assign_true = set()
 assign_false = set()
@@ -109,5 +110,34 @@ def dpll():
         print('\nResult: UNSATISFIABLE')
     print()
 
+# New function to solve a single CNF at a time when called from the command line (must use "~" for negation)
+def dpll(cnf_argument):
+    global assign_true, assign_false, n_props, n_splits
+    literals = [i for i in list(set(cnf_argument)) if i.isalpha()]
+    if not re.match(r'^(\s*(!?[A-Z]\s*)+)$', cnf_argument):
+        print('Invalid input format; please submit one formula at a time in CNF (e.g., ~A B ~C). Please try again.')
+        return
+    elif solve([cnf_argument], literals):
+        print('\nNumber of Splits =', n_splits)
+        print('Unit Propogations =', n_props)
+        print('\nResult: SATISFIABLE')
+        print('Solution:')
+        for i in assign_true:
+            print('\t\t'+i, '= True')
+        for i in assign_false:
+            print('\t\t'+i, '= False')
+    else:
+        print('\nReached starting node!')
+        print('Number of Splitss =', n_splits)
+        print('Unit Propogations =', n_props)
+        print('\nResult: UNSATISFIABLE')
+    print()
+
+# Modified main function to allow for command line input
 if __name__=='__main__':
-    dpll()
+    if len(sys.argv)==2:
+        dpll()
+    elif len(sys.argv)==3 and sys.argv[1] == 'solve':
+        formula = sys.argv[2].replace("~", "!")
+        print('Solving CNF:', formula)
+        dpll(formula)
